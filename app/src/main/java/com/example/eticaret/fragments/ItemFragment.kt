@@ -28,14 +28,18 @@ class ItemFragment : Fragment() {
         binding.ivDetayUrun.setImageResource(currentItemPicID)
 
         binding.cardDetayEkle.setOnClickListener {
-            Snackbar.make(binding.cardDetayEkle, "ToDo", Snackbar.LENGTH_SHORT).show()
             val tempItemList = ArrayList<MenuItem>()
             tempItemList.add(currentItem)
             SharedEntity.mainUser.member_cart = SharedEntity.mainUser.member_cart + tempItemList
+            SharedEntity.cartSum.value = SharedEntity.cartSum.value!! + currentItem.item_price
         }
 
         binding.ivGeri.setOnClickListener {
             findNavController(binding.ivGeri).popBackStack()
+        }
+
+        SharedEntity.cartSum.observe(viewLifecycleOwner){
+            binding.tvSepetToplamDetay.text = "$it₺"
         }
 
         return binding.root

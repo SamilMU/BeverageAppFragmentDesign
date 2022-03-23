@@ -15,7 +15,6 @@ import com.google.android.material.snackbar.Snackbar
 
 class MenuAdapter(var mContext: Context, var itemList: ArrayList<MenuItem>) : RecyclerView.Adapter<MenuAdapter.menuCardViewHolder>() {
 
-    var cartCounter : MutableLiveData<Double> = MutableLiveData(0.0)
 
     inner class menuCardViewHolder(binding: MenuCardItemBinding) : RecyclerView.ViewHolder(binding.root){
         var binding : MenuCardItemBinding
@@ -49,11 +48,10 @@ class MenuAdapter(var mContext: Context, var itemList: ArrayList<MenuItem>) : Re
             binding.cardEkleButon.visibility = View.GONE
         }else{
             binding.btnEkle.setOnClickListener {
-                Snackbar.make(binding.cardEkleButon, "ToDo", Snackbar.LENGTH_SHORT).show()
                 val tempItemList = ArrayList<MenuItem>()
                 tempItemList.add(currentItem)
                 SharedEntity.mainUser.member_cart = SharedEntity.mainUser.member_cart + tempItemList
-                cartCounter.value = cartCounter.value!! + currentItem.item_price
+                SharedEntity.cartSum.value = SharedEntity.cartSum.value!! + currentItem.item_price
             }
         }
 

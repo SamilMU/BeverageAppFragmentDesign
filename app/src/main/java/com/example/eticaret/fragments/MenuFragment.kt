@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
@@ -17,14 +16,13 @@ import com.example.eticaret.entities.MenuItem
 
 class MenuFragment : Fragment() {
 
+    var testItemList = createTestList()
     private lateinit var binding: FragmentMenuBinding
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        // Inflate the layout for this fragment
         binding = FragmentMenuBinding.inflate(inflater,container,false)
 
         loggedCheck(binding)
 
-        val testItemList = createTestList()
         var tempList4Adapter = ArrayList<MenuItem>()
 //        addChip2Categories(testItemList, localCategoryList)
 
@@ -34,8 +32,14 @@ class MenuFragment : Fragment() {
         binding.rvMenu.layoutManager = lm
         binding.rvMenu.adapter = adap
 
+        SharedEntity.cartSum.observe(viewLifecycleOwner){
+            binding.tvSepetToplam.text = "${it}₺"
+        }
+
         // Buttons
         binding.menuChipGroup.setOnCheckedChangeListener { group, checkedId ->
+            testItemList = createTestList()
+            var emptyChecker = false
             var tempCategory = Categories.SU
             when(checkedId){
                 binding.chipSu.id -> tempCategory = Categories.SU
@@ -43,24 +47,22 @@ class MenuFragment : Fragment() {
                 binding.chipGaz.id -> tempCategory = Categories.GAZLI
                 binding.chipMaden.id -> tempCategory = Categories.MADEN
                 binding.chipAyran.id -> tempCategory = Categories.AYRAN
+                else -> emptyChecker = true
             }
-            testItemList.forEach {
-                if(it.item_category.name == tempCategory.name){
-                    tempList4Adapter.add(it)
+            if(!emptyChecker){
+                testItemList.forEach {
+                    if(it.item_category.name == tempCategory.name){
+                        tempList4Adapter.add(it)
+                    }
                 }
+            }else{
+                tempList4Adapter = testItemList
             }
-            val adapterNew = MenuAdapter(
-                requireContext(),
-                tempList4Adapter
-            )
 
-            // TODO A full list is being sent but it does not update. Nothing is shown.
-            updateAdapter(binding, adapterNew)
+
+            testItemList = tempList4Adapter
             tempList4Adapter = arrayListOf()
-        }
-
-        adap.cartCounter.observe(viewLifecycleOwner){
-            binding.tvSepetToplam.text = it.toString()
+            onResume()
         }
 
         binding.ivGeri.setOnClickListener {
@@ -100,25 +102,29 @@ class MenuFragment : Fragment() {
         }
     }*/
 
-    private fun updateAdapter(binding: FragmentMenuBinding, adapter: MenuAdapter){
-        Toast.makeText(requireContext(),adapter.itemList.toString(),Toast.LENGTH_SHORT).show()
-        binding.rvMenu.adapter = adapter
+    override fun onResume() {
+        super.onResume()
+        var adap = MenuAdapter(requireContext(),testItemList)
+        val lm = StaggeredGridLayoutManager(1,StaggeredGridLayoutManager.HORIZONTAL)
+        binding.rvMenu.layoutManager = lm
+        binding.rvMenu.adapter = adap
+        binding.tvSepetToplam.text = "${SharedEntity.cartSum.value}₺"
     }
 
-    private fun createTestList() : ArrayList<MenuItem>{
-        var tempList = ArrayList<MenuItem>()
+    fun createTestList() : ArrayList<MenuItem>{
+        val tempList = ArrayList<MenuItem>()
         val item1 = MenuItem("Küçük Su","Erikli",1.35,Categories.SU,"500ml Su","eriklisu")
         val item2 = MenuItem("Meyve Suyu","Dimes",14.35,Categories.MEYVE,"Karışık Meyve Nektaro","meyvesuyu")
         val item3 = MenuItem("Su","Hayat",14.35,Categories.SU,"Hayat Su Büyük","hayatbuyuksu")
-        val item5 = MenuItem("Gazoz","Sprite",9.35,Categories.GAZLI,"2L Gazlı içecek","spritegaz")
-        val item7 = MenuItem("Soda","Beypazarı",4.35,Categories.MADEN,"350ml Maden Suyu","beypazarisoda")
-        val item8 = MenuItem("Ayran","Sütaş",3.35,Categories.AYRAN,"350ml İçimlik Ayran","ayran")
+        val item4 = MenuItem("Gazoz","Sprite",9.35,Categories.GAZLI,"2L Gazlı içecek","spritegaz")
+        val item5 = MenuItem("Soda","Beypazarı",4.35,Categories.MADEN,"350ml Maden Suyu","beypazarisoda")
+        val item6 = MenuItem("Ayran","Sütaş",3.35,Categories.AYRAN,"350ml İçimlik Ayran","ayran")
         tempList.add(item1)
         tempList.add(item2)
         tempList.add(item3)
+        tempList.add(item4)
         tempList.add(item5)
-        tempList.add(item7)
-        tempList.add(item8)
+        tempList.add(item6)
 
         return tempList
     }
